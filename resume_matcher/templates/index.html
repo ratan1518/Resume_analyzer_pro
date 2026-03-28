@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Resume Matcher Pro</title>
+    <style>
+        :root {
+            --bg: #f7f2e9;
+            --ink: #13233e;
+            --muted: #5f6d82;
+            --panel: rgba(255, 255, 255, 0.86);
+            --panel-strong: #fffdfa;
+            --accent: #c85a22;
+            --accent-soft: #ffe4d7;
+            --teal: #0f7689;
+            --teal-soft: #dff7fb;
+            --border: rgba(19, 35, 62, 0.10);
+            --shadow: 0 24px 60px rgba(19, 35, 62, 0.10);
+        }
+
+        body.theme-dark {
+            --bg: #0a1322;
+            --ink: #f6efdf;
+            --muted: #b6c4d7;
+            --panel: rgba(14, 27, 46, 0.92);
+            --panel-strong: #101d31;
+            --accent: #ff8347;
+            --accent-soft: rgba(255, 131, 71, 0.14);
+            --teal: #89ebf5;
+            --teal-soft: rgba(137, 235, 245, 0.12);
+            --border: rgba(214, 226, 243, 0.10);
+            --shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Aptos", "Segoe UI", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(255, 213, 188, 0.78), transparent 24%),
+                radial-gradient(circle at top right, rgba(212, 240, 246, 0.9), transparent 26%),
+                linear-gradient(180deg, #fffdfa, var(--bg));
+            transition: background 0.25s ease, color 0.25s ease;
+        }
+
+        body.theme-dark {
+            background:
+                radial-gradient(circle at top left, rgba(255, 131, 71, 0.16), transparent 24%),
+                radial-gradient(circle at top right, rgba(137, 235, 245, 0.12), transparent 26%),
+                linear-gradient(180deg, #0c1423, var(--bg));
+        }
+
+        .page {
+            width: min(1180px, calc(100% - 24px));
+            margin: 0 auto;
+            padding: 18px 0 28px;
+        }
+
+        .topbar,
+        .hero,
+        .form-shell,
+        .quick-links {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 16px;
+            border-radius: 999px;
+            backdrop-filter: blur(10px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 14px;
+            color: white;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), #de7d4b);
+        }
+
+        .brand-copy strong {
+            display: block;
+            font-size: 1rem;
+        }
+
+        .brand-copy span,
+        .topbar-note,
+        .helper,
+        .intro-copy p,
+        .mini-card p {
+            color: var(--muted);
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ghost-button,
+        .primary-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border-radius: 999px;
+            padding: 12px 18px;
+            font-weight: 900;
+            font-size: 0.95rem;
+            border: 1px solid var(--border);
+            cursor: pointer;
+        }
+
+        .ghost-button {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--ink);
+        }
+
+        .primary-button {
+            border: 0;
+            color: white;
+            background: linear-gradient(135deg, var(--accent), #de7d4b);
+            box-shadow: 0 18px 34px rgba(200, 90, 34, 0.22);
+        }
+
+        .hero {
+            margin-top: 16px;
+            border-radius: 28px;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 18px;
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            padding: 9px 12px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-size: 0.82rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 14px 0 12px;
+            font-family: "Georgia", "Times New Roman", serif;
+            font-size: clamp(2.2rem, 5vw, 4.2rem);
+            line-height: 0.95;
+            letter-spacing: -0.06em;
+        }
+
+        .intro-copy p {
+            margin: 0;
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        .hero-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .hero-badge {
+            padding: 9px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.70);
+            border: 1px solid var(--border);
+            font-weight: 800;
+        }
+
+        .mini-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .mini-card {
+            padding: 16px;
+            border-radius: 20px;
+            background: var(--panel-strong);
+            border: 1px solid var(--border);
+        }
+
+        .mini-card strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 1rem;
+        }
+
+        .form-shell {
+            margin-top: 16px;
+            border-radius: 28px;
+            padding: 18px;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .section-head h2 {
+            margin: 0;
+            font-family: "Georgia", "Times New Roman", serif;
+            font-size: 1.35rem;
+        }
+
+        .section-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: var(--teal-soft);
+            color: var(--teal);
+            font-size: 0.82rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .input-card {
+            padding: 14px;
+            border-radius: 22px;
+            background: var(--panel-strong);
+            border: 1px solid var(--border);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 900;
+        }
+
+        input[type="file"],
+        textarea {
+            width: 100%;
+            font: inherit;
+            color: var(--ink);
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+        }
+
+        input[type="file"] {
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            min-height: 240px;
+            padding: 14px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .helper {
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .alert {
+            margin-top: 14px;
+            padding: 12px 14px;
+            border-radius: 18px;
+            background: rgba(180, 35, 24, 0.10);
+            color: #b42318;
+            border: 1px solid rgba(180, 35, 24, 0.16);
+            font-weight: 800;
+        }
+
+        .quick-links {
+            margin-top: 16px;
+            border-radius: 24px;
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .quick-links h3 {
+            margin: 0 0 6px;
+            font-family: "Georgia", "Times New Roman", serif;
+            font-size: 1.05rem;
+        }
+
+        .quick-links p {
+            margin: 0;
+            color: var(--muted);
+        }
+
+        body.theme-dark input[type="file"],
+        body.theme-dark textarea,
+        body.theme-dark .mini-card,
+        body.theme-dark .input-card,
+        body.theme-dark .quick-links,
+        body.theme-dark .hero-badge {
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        body.theme-dark .hero-badge,
+        body.theme-dark .eyebrow,
+        body.theme-dark .section-pill {
+            border-color: rgba(214, 226, 243, 0.10);
+        }
+
+        @media (max-width: 900px) {
+            .hero,
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .page {
+                width: min(100% - 16px, 1180px);
+                padding: 12px 0 22px;
+            }
+
+            .topbar,
+            .hero,
+            .form-shell,
+            .quick-links {
+                border-radius: 22px;
+            }
+
+            .topbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .topbar-actions,
+            .toolbar {
+                width: 100%;
+            }
+
+            .topbar-actions .ghost-button,
+            .toolbar .ghost-button,
+            .toolbar .primary-button,
+            .quick-links .ghost-button {
+                width: 100%;
+            }
+
+            .hero {
+                padding: 18px;
+            }
+
+            .mini-grid {
+                display: none;
+            }
+
+            h1 {
+                font-size: clamp(2rem, 11vw, 3rem);
+            }
+
+            textarea {
+                min-height: 160px;
+            }
+
+            .quick-links {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-mark">RM</div>
+                <div class="brand-copy">
+                    <strong>Resume Matcher Pro</strong>
+                    <span>Multi-step recruiter intelligence flow</span>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                {% if has_result %}
+                <a class="ghost-button" href="/results/summary">Open Latest Results</a>
+                {% endif %}
+                <button class="ghost-button" type="button" id="themeToggle">Dark Mode</button>
+            </div>
+        </header>
+
+        <section class="hero">
+            <div class="intro-copy">
+                <div class="eyebrow">Recruiter-Grade Resume Intelligence</div>
+                <h1>Start on one clean page. Review results on dedicated pages.</h1>
+                <p>The flow is now split for clarity: input here, then a focused summary, skill analysis, and strategy page after processing. That makes the experience calmer on mobile and easier to navigate everywhere.</p>
+                <div class="hero-badges">
+                    <span class="hero-badge">Input First</span>
+                    <span class="hero-badge">Dedicated Results Pages</span>
+                    <span class="hero-badge">Mobile Friendlier</span>
+                    <span class="hero-badge">PDF Report Ready</span>
+                </div>
+            </div>
+            <div class="mini-grid">
+                <div class="mini-card">
+                    <strong>1. Add inputs</strong>
+                    <p>Upload a PDF or paste resume text, then add the exact job description.</p>
+                </div>
+                <div class="mini-card">
+                    <strong>2. Review summary</strong>
+                    <p>See match score, role fit, and core signals on a compact results page.</p>
+                </div>
+                <div class="mini-card">
+                    <strong>3. Dive deeper</strong>
+                    <p>Open dedicated skill and strategy pages instead of scrolling one giant dashboard.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="form-shell">
+            <div class="section-head">
+                <h2>Compose Analysis</h2>
+                <div class="section-pill">Input Studio</div>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
+                <div class="form-grid">
+                    <div class="input-card">
+                        <label for="resume_text">Resume Input</label>
+                        <input id="resume_file" name="resume_file" type="file" accept=".pdf">
+                        <textarea id="resume_text" name="resume_text" placeholder="Paste your resume summary, projects, skills, and experience here..." required>{{ resume_text }}</textarea>
+                        <div class="helper">{{ source_label }}</div>
+                    </div>
+
+                    <div class="input-card">
+                        <label for="job_description">Target Job Description</label>
+                        <textarea id="job_description" name="job_description" placeholder="Paste the internship or job description here..." required>{{ job_description }}</textarea>
+                        <div class="helper">Use the exact job description for better role inference, skill detection, and ATS guidance.</div>
+                    </div>
+                </div>
+
+                <div class="toolbar">
+                    <button class="primary-button" type="submit">Analyze Resume Match</button>
+                    {% if has_result %}
+                    <a class="ghost-button" href="/results/summary">Go To Latest Results</a>
+                    {% endif %}
+                </div>
+            </form>
+
+            {% if error_message %}
+            <div class="alert">{{ error_message }}</div>
+            {% endif %}
+        </section>
+
+        {% if has_result %}
+        <section class="quick-links">
+            <div>
+                <h3>Latest result is available</h3>
+                <p>Open the summary page first, then move to skills or strategy when you want more detail.</p>
+            </div>
+            <a class="ghost-button" href="/results/summary">Continue To Results</a>
+        </section>
+        {% endif %}
+    </main>
+
+    <script>
+        const storedTheme = localStorage.getItem("resume-matcher-theme");
+        const body = document.body;
+        const themeToggle = document.getElementById("themeToggle");
+
+        if (storedTheme === "dark") {
+            body.classList.add("theme-dark");
+            themeToggle.textContent = "Light Mode";
+        }
+
+        themeToggle.addEventListener("click", () => {
+            body.classList.toggle("theme-dark");
+            const isDark = body.classList.contains("theme-dark");
+            localStorage.setItem("resume-matcher-theme", isDark ? "dark" : "light");
+            themeToggle.textContent = isDark ? "Light Mode" : "Dark Mode";
+        });
+    </script>
+</body>
+</html>

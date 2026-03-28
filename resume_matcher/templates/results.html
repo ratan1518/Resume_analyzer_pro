@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Resume Matcher Pro Results</title>
+    <style>
+        :root {
+            --bg: #f7f2e9;
+            --ink: #13233e;
+            --muted: #607086;
+            --panel: rgba(255, 255, 255, 0.88);
+            --panel-strong: #fffdfa;
+            --accent: #c85a22;
+            --accent-soft: #ffe4d7;
+            --teal: #0f7689;
+            --teal-soft: #dff7fb;
+            --gold: #b98c22;
+            --gold-soft: #fff0c8;
+            --success: #1f7a4d;
+            --success-soft: #e6f7ed;
+            --warning: #986100;
+            --warning-soft: #fff0c9;
+            --border: rgba(19, 35, 62, 0.10);
+            --shadow: 0 24px 60px rgba(19, 35, 62, 0.10);
+            --ring-track: rgba(19, 35, 62, 0.08);
+        }
+
+        body.theme-dark {
+            --bg: #0a1322;
+            --ink: #f6efdf;
+            --muted: #b8c8dc;
+            --panel: rgba(14, 27, 46, 0.92);
+            --panel-strong: #101d31;
+            --accent: #ff8347;
+            --accent-soft: rgba(255, 131, 71, 0.14);
+            --teal: #89ebf5;
+            --teal-soft: rgba(137, 235, 245, 0.12);
+            --gold: #ffd474;
+            --gold-soft: rgba(255, 212, 116, 0.12);
+            --success: #99e7b6;
+            --success-soft: rgba(153, 231, 182, 0.12);
+            --warning: #ffd98f;
+            --warning-soft: rgba(255, 217, 143, 0.12);
+            --border: rgba(214, 226, 243, 0.10);
+            --shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+            --ring-track: rgba(214, 226, 243, 0.10);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Aptos", "Segoe UI", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(255, 213, 188, 0.78), transparent 24%),
+                radial-gradient(circle at top right, rgba(212, 240, 246, 0.9), transparent 26%),
+                linear-gradient(180deg, #fffdfa, var(--bg));
+        }
+
+        body.theme-dark {
+            background:
+                radial-gradient(circle at top left, rgba(255, 131, 71, 0.16), transparent 24%),
+                radial-gradient(circle at top right, rgba(137, 235, 245, 0.12), transparent 26%),
+                linear-gradient(180deg, #0c1423, var(--bg));
+        }
+
+        .page {
+            width: min(1180px, calc(100% - 24px));
+            margin: 0 auto;
+            padding: 18px 0 28px;
+        }
+
+        .topbar,
+        .summary-hero,
+        .nav-shell,
+        .panel,
+        .metric-card,
+        .quick-grid > div {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 14px 16px;
+            border-radius: 999px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            color: white;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--accent), #de7d4b);
+        }
+
+        .brand strong {
+            display: block;
+        }
+
+        .brand span,
+        .helper,
+        .muted,
+        .quick-grid p,
+        .metric-copy p {
+            color: var(--muted);
+        }
+
+        .topbar-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ghost-button,
+        .primary-button,
+        .nav-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            border-radius: 999px;
+            padding: 11px 16px;
+            font-weight: 900;
+            border: 1px solid var(--border);
+        }
+
+        .inline-form {
+            margin: 0;
+        }
+
+        .ghost-button,
+        .nav-link {
+            color: var(--ink);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .primary-button,
+        .nav-link.active {
+            border-color: transparent;
+            color: white;
+            background: linear-gradient(135deg, var(--accent), #de7d4b);
+            box-shadow: 0 18px 34px rgba(200, 90, 34, 0.22);
+        }
+
+        .summary-hero {
+            margin-top: 16px;
+            border-radius: 28px;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 16px;
+        }
+
+        .summary-card {
+            padding: 18px;
+            border-radius: 24px;
+            background:
+                radial-gradient(circle at top left, rgba(255, 228, 215, 0.88), transparent 30%),
+                linear-gradient(135deg, var(--panel-strong), rgba(255, 248, 242, 0.96));
+            border: 1px solid rgba(200, 90, 34, 0.14);
+        }
+
+        body.theme-dark .summary-card {
+            background:
+                radial-gradient(circle at top left, rgba(255, 131, 71, 0.14), transparent 30%),
+                linear-gradient(135deg, rgba(18, 32, 54, 0.96), rgba(12, 24, 41, 0.96));
+        }
+
+        .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: var(--teal-soft);
+            color: var(--teal);
+            font-size: 0.82rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        h1, h2, h3 {
+            font-family: "Georgia", "Times New Roman", serif;
+        }
+
+        .summary-title {
+            margin: 14px 0 10px;
+            font-size: clamp(2rem, 4vw, 3rem);
+            line-height: 0.95;
+            letter-spacing: -0.05em;
+        }
+
+        .score-row {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .progress-ring {
+            --value: 0;
+            --ring-color: var(--accent);
+            width: 108px;
+            height: 108px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            position: relative;
+            background: conic-gradient(var(--ring-color) calc(var(--value) * 1%), var(--ring-track) 0);
+        }
+
+        .progress-ring::before {
+            content: "";
+            position: absolute;
+            inset: 12px;
+            border-radius: 50%;
+            background: var(--panel-strong);
+            border: 1px solid var(--border);
+        }
+
+        body.theme-dark .progress-ring::before {
+            background: #101d31;
+        }
+
+        .progress-ring span {
+            position: relative;
+            z-index: 1;
+            font-weight: 900;
+            font-size: 1.2rem;
+        }
+
+        .big-score {
+            font-size: 4rem;
+            letter-spacing: -0.08em;
+            margin: 0 0 8px;
+        }
+
+        .band {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: var(--success-soft);
+            color: var(--success);
+            font-weight: 900;
+        }
+
+        .meta-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .metric-card {
+            padding: 14px 16px;
+            border-radius: 22px;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .metric-card .progress-ring {
+            width: 78px;
+            height: 78px;
+        }
+
+        .metric-card .progress-ring::before {
+            inset: 9px;
+        }
+
+        .metric-card .progress-ring span {
+            font-size: 0.95rem;
+        }
+
+        .metric-copy h3 {
+            margin: 0 0 4px;
+            font-size: 1.02rem;
+        }
+
+        .metric-copy p {
+            margin: 0;
+            line-height: 1.45;
+        }
+
+        .nav-shell {
+            margin-top: 16px;
+            border-radius: 22px;
+            padding: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .quick-grid {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .quick-grid > div,
+        .panel {
+            padding: 18px;
+            border-radius: 24px;
+        }
+
+        .quick-grid strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 1rem;
+        }
+
+        .content-grid {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .panel.wide {
+            grid-column: span 2;
+        }
+
+        .section-kicker {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: var(--teal-soft);
+            color: var(--teal);
+            font-size: 0.82rem;
+            font-weight: 900;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .panel h2 {
+            margin: 12px 0;
+            font-size: 1.2rem;
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tag {
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: var(--accent-soft);
+            color: var(--accent);
+            font-weight: 900;
+        }
+
+        .tag.warning {
+            background: var(--warning-soft);
+            color: var(--warning);
+        }
+
+        .tag.cool {
+            background: var(--teal-soft);
+            color: var(--teal);
+        }
+
+        .empty {
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 900px) {
+            .summary-hero,
+            .quick-grid,
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .panel.wide {
+                grid-column: span 1;
+            }
+        }
+
+        @media (max-width: 700px) {
+            .page {
+                width: min(100% - 16px, 1180px);
+                padding: 12px 0 22px;
+            }
+
+            .topbar,
+            .summary-hero,
+            .nav-shell,
+            .quick-grid > div,
+            .panel {
+                border-radius: 20px;
+            }
+
+            .topbar,
+            .nav-shell {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .topbar-actions,
+            .nav-links {
+                width: 100%;
+            }
+
+            .ghost-button,
+            .primary-button,
+            .nav-link {
+                width: 100%;
+            }
+
+            .summary-hero {
+                padding: 14px;
+            }
+
+            .summary-card,
+            .metric-card,
+            .quick-grid > div,
+            .panel {
+                padding: 14px;
+            }
+
+            .score-row,
+            .metric-card {
+                grid-template-columns: 1fr;
+            }
+
+            .progress-ring {
+                width: 88px;
+                height: 88px;
+                margin: 0 auto;
+            }
+
+            .big-score {
+                font-size: 2.9rem;
+                text-align: center;
+            }
+
+            .summary-card .helper,
+            .metric-copy,
+            .summary-card .muted {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-mark">RM</div>
+                <div>
+                    <strong>Resume Matcher Pro</strong>
+                    <span class="helper">Step-based results flow</span>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <a class="ghost-button" href="/">New Analysis</a>
+                <form class="inline-form" method="post" action="/download-report">
+                    <input type="hidden" name="resume_text" value="{{ resume_text }}">
+                    <input type="hidden" name="job_description" value="{{ job_description }}">
+                    <input type="hidden" name="source_label" value="{{ source_label }}">
+                    <button class="primary-button" type="submit">Download PDF Report</button>
+                </form>
+                <button class="ghost-button" type="button" id="themeToggle">Dark Mode</button>
+            </div>
+        </header>
+
+        <section class="summary-hero">
+            <div class="summary-card">
+                <div class="eyebrow">Summary</div>
+                <h1 class="summary-title">{{ result.role_summary.role_name.title() }}</h1>
+                <div class="score-row">
+                    <div class="progress-ring" style="--value: {{ result.overall_score }}; --ring-color: var(--accent);">
+                        <span>{{ result.overall_score }}%</span>
+                    </div>
+                    <div>
+                        <div class="muted">Overall Match</div>
+                        <div class="big-score">{{ result.overall_score }}%</div>
+                        <div class="band">{{ result.readiness_band }}</div>
+                        <p class="helper">A combined view of skill overlap, semantic alignment, and resume evidence.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="meta-grid">
+                <div class="metric-card">
+                    <div class="progress-ring" style="--value: {{ result.skill_score }}; --ring-color: var(--teal);">
+                        <span>{{ result.skill_score }}%</span>
+                    </div>
+                    <div class="metric-copy">
+                        <h3>Weighted Skill Match</h3>
+                        <p>How closely your visible skill stack matches the role.</p>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="progress-ring" style="--value: {{ result.semantic_score }}; --ring-color: var(--gold);">
+                        <span>{{ result.semantic_score }}%</span>
+                    </div>
+                    <div class="metric-copy">
+                        <h3>Semantic Alignment</h3>
+                        <p>How strongly your wording mirrors the job description.</p>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="progress-ring" style="--value: {{ result.impact_score }}; --ring-color: var(--success);">
+                        <span>{{ result.impact_score }}%</span>
+                    </div>
+                    <div class="metric-copy">
+                        <h3>Resume Evidence</h3>
+                        <p>Whether the resume shows ownership, delivery, and measurable impact.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <nav class="nav-shell">
+            <div class="nav-links">
+                <form class="inline-form" method="post" action="/results/summary">
+                    <input type="hidden" name="resume_text" value="{{ resume_text }}">
+                    <input type="hidden" name="job_description" value="{{ job_description }}">
+                    <input type="hidden" name="source_label" value="{{ source_label }}">
+                    <button class="nav-link {% if page_name == 'summary' %}active{% endif %}" type="submit">Summary</button>
+                </form>
+                <form class="inline-form" method="post" action="/results/skills">
+                    <input type="hidden" name="resume_text" value="{{ resume_text }}">
+                    <input type="hidden" name="job_description" value="{{ job_description }}">
+                    <input type="hidden" name="source_label" value="{{ source_label }}">
+                    <button class="nav-link {% if page_name == 'skills' %}active{% endif %}" type="submit">Skills</button>
+                </form>
+                <form class="inline-form" method="post" action="/results/strategy">
+                    <input type="hidden" name="resume_text" value="{{ resume_text }}">
+                    <input type="hidden" name="job_description" value="{{ job_description }}">
+                    <input type="hidden" name="source_label" value="{{ source_label }}">
+                    <button class="nav-link {% if page_name == 'strategy' %}active{% endif %}" type="submit">Strategy</button>
+                </form>
+            </div>
+            <div class="helper">Move between focused result pages instead of scrolling one long dashboard.</div>
+        </nav>
+
+        {% if page_name == "summary" %}
+        <section class="quick-grid">
+            <div>
+                <strong>Matched Skills</strong>
+                <p>{{ result.matched_skills|length }} skills directly align with the target role.</p>
+            </div>
+            <div>
+                <strong>Priority Gap</strong>
+                <p>{% if result.missing_skills %}{{ result.missing_skills[:4]|join(', ') }}{% else %}No major missing skill cluster detected.{% endif %}</p>
+            </div>
+            <div>
+                <strong>Resume Signal</strong>
+                <p>{% if result.strengths %}{{ result.strengths[0] }}{% else %}Resume needs stronger role evidence and clearer positioning.{% endif %}</p>
+            </div>
+        </section>
+
+        <section class="content-grid">
+            <div class="panel">
+                <div class="section-kicker">Role Signal</div>
+                <h2>Role Fit</h2>
+                <p class="helper">Inferred from the language and skill profile of the job description.</p>
+                <div class="tag-list">
+                    <span class="tag">{{ result.role_summary.role_name }}</span>
+                    {% for skill in result.role_summary.priority_gaps[:3] %}
+                    <span class="tag warning">{{ skill }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="section-kicker">Fast Read</div>
+                <h2>What To Do Next</h2>
+                <ul>
+                    {% for item in result.improvements[:3] %}
+                    <li>{{ item }}</li>
+                    {% else %}
+                    <li>Your resume already aligns well with the current role.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+        {% elif page_name == "skills" %}
+        <section class="content-grid">
+            <div class="panel">
+                <div class="section-kicker">Overlap</div>
+                <h2>Matched Skills</h2>
+                <div class="tag-list">
+                    {% for skill in result.matched_skills %}
+                    <span class="tag">{{ skill }}</span>
+                    {% else %}
+                    <span class="empty">No strong overlap detected yet.</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="section-kicker">Gap Analysis</div>
+                <h2>Missing Skills</h2>
+                <div class="tag-list">
+                    {% for skill in result.missing_skills %}
+                    <span class="tag warning">{{ skill }}</span>
+                    {% else %}
+                    <span class="empty">No missing skill keywords found.</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="section-kicker">Inventory</div>
+                <h2>Resume-Only Skills</h2>
+                <div class="tag-list">
+                    {% for skill in result.extra_skills %}
+                    <span class="tag cool">{{ skill }}</span>
+                    {% else %}
+                    <span class="empty">No additional skill keywords found.</span>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="section-kicker">Detected JD Stack</div>
+                <h2>Job Skills Found</h2>
+                <div class="tag-list">
+                    {% for skill in result.job_skills %}
+                    <span class="tag">{{ skill }}</span>
+                    {% else %}
+                    <span class="empty">No skills detected in the job description.</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+        {% else %}
+        <section class="content-grid">
+            <div class="panel wide">
+                <div class="section-kicker">Strengths</div>
+                <h2>What Already Works</h2>
+                <ul>
+                    {% for item in result.strengths %}
+                    <li>{{ item }}</li>
+                    {% else %}
+                    <li>No strong strengths detected yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="panel wide">
+                <div class="section-kicker">Improvements</div>
+                <h2>What To Fix Next</h2>
+                <ul>
+                    {% for item in result.improvements %}
+                    <li>{{ item }}</li>
+                    {% else %}
+                    <li>Your resume already aligns well with the pasted role.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="panel">
+                <div class="section-kicker">ATS Tips</div>
+                <h2>Screening Strategy</h2>
+                <ul>
+                    {% for item in result.ats_tips %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="panel">
+                <div class="section-kicker">Role Coaching</div>
+                <h2>Recommendations</h2>
+                <ul>
+                    {% for item in result.role_summary.recommendations %}
+                    <li>{{ item }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+        {% endif %}
+    </main>
+
+    <script>
+        const storedTheme = localStorage.getItem("resume-matcher-theme");
+        const body = document.body;
+        const themeToggle = document.getElementById("themeToggle");
+
+        if (storedTheme === "dark") {
+            body.classList.add("theme-dark");
+            themeToggle.textContent = "Light Mode";
+        }
+
+        themeToggle.addEventListener("click", () => {
+            body.classList.toggle("theme-dark");
+            const isDark = body.classList.contains("theme-dark");
+            localStorage.setItem("resume-matcher-theme", isDark ? "dark" : "light");
+            themeToggle.textContent = isDark ? "Light Mode" : "Dark Mode";
+        });
+    </script>
+</body>
+</html>
