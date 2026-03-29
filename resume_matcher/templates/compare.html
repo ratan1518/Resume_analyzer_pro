@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Resume Matcher Pro | Compare Resumes</title>
+    <style>
+        :root {
+            --bg: #f7f2e9;
+            --ink: #13233e;
+            --muted: #607086;
+            --panel: rgba(255, 255, 255, 0.88);
+            --panel-strong: #fffdfa;
+            --accent: #c85a22;
+            --accent-soft: #ffe4d7;
+            --teal: #0f7689;
+            --teal-soft: #dff7fb;
+            --success: #1f7a4d;
+            --success-soft: #e6f7ed;
+            --warning: #986100;
+            --warning-soft: #fff0c9;
+            --border: rgba(19, 35, 62, 0.10);
+            --shadow: 0 24px 60px rgba(19, 35, 62, 0.10);
+        }
+
+        body.theme-dark {
+            --bg: #0a1322;
+            --ink: #f6efdf;
+            --muted: #b8c8dc;
+            --panel: rgba(14, 27, 46, 0.92);
+            --panel-strong: #101d31;
+            --accent: #ff8347;
+            --accent-soft: rgba(255, 131, 71, 0.14);
+            --teal: #89ebf5;
+            --teal-soft: rgba(137, 235, 245, 0.12);
+            --success: #99e7b6;
+            --success-soft: rgba(153, 231, 182, 0.12);
+            --warning: #ffd98f;
+            --warning-soft: rgba(255, 217, 143, 0.12);
+            --border: rgba(214, 226, 243, 0.10);
+            --shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+        }
+
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Aptos", "Segoe UI", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at top left, rgba(255, 213, 188, 0.78), transparent 24%),
+                radial-gradient(circle at top right, rgba(212, 240, 246, 0.9), transparent 26%),
+                linear-gradient(180deg, #fffdfa, var(--bg));
+        }
+        body.theme-dark {
+            background:
+                radial-gradient(circle at top left, rgba(255, 131, 71, 0.16), transparent 24%),
+                radial-gradient(circle at top right, rgba(137, 235, 245, 0.12), transparent 26%),
+                linear-gradient(180deg, #0c1423, var(--bg));
+        }
+
+        .page { width: min(1240px, calc(100% - 24px)); margin: 0 auto; padding: 18px 0 28px; }
+        .topbar, .hero, .form-shell, .panel, .compare-shell, .winner-card {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between; gap: 14px;
+            padding: 14px 16px; border-radius: 999px;
+        }
+        .brand { display: flex; align-items: center; gap: 12px; }
+        .brand-mark {
+            width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center;
+            color: white; font-weight: 900; background: linear-gradient(135deg, var(--accent), #de7d4b);
+        }
+        .ghost-button, .primary-button {
+            display: inline-flex; align-items: center; justify-content: center; text-decoration: none;
+            border-radius: 999px; padding: 11px 16px; font-weight: 900; border: 1px solid var(--border); cursor: pointer;
+        }
+        .ghost-button { color: var(--ink); background: rgba(255,255,255,0.06); }
+        .primary-button {
+            border-color: transparent; color: white; background: linear-gradient(135deg, var(--accent), #de7d4b);
+            box-shadow: 0 18px 34px rgba(200, 90, 34, 0.22);
+        }
+        .topbar-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+        .hero {
+            margin-top: 16px; padding: 22px; border-radius: 28px;
+            display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 16px;
+        }
+        .eyebrow, .section-kicker {
+            display: inline-flex; align-items: center; padding: 8px 12px; border-radius: 999px;
+            background: var(--teal-soft); color: var(--teal); font-size: 0.82rem; font-weight: 900;
+            letter-spacing: 0.05em; text-transform: uppercase;
+        }
+        h1, h2, h3 { font-family: "Georgia", "Times New Roman", serif; }
+        h1 { margin: 14px 0 10px; font-size: clamp(2.1rem, 5vw, 4rem); line-height: 0.95; letter-spacing: -0.05em; }
+        .muted, .helper, .mini-card p, .score-meta span { color: var(--muted); }
+        .hero-badges, .tag-list { display: flex; flex-wrap: wrap; gap: 10px; }
+        .hero-badge, .tag {
+            padding: 8px 12px; border-radius: 999px; font-weight: 900;
+            background: var(--accent-soft); color: var(--accent);
+        }
+        .mini-grid { display: grid; gap: 12px; }
+        .mini-card { padding: 14px; border-radius: 18px; background: var(--panel-strong); border: 1px solid var(--border); }
+        .mini-card strong { display: block; margin-bottom: 6px; }
+
+        .form-shell { margin-top: 16px; padding: 18px; border-radius: 28px; }
+        .section-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px;
+        }
+        .form-grid, .compare-grid, .resume-grid {
+            display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;
+        }
+        .input-card, .panel, .winner-card { padding: 16px; border-radius: 22px; background: var(--panel-strong); border: 1px solid var(--border); }
+        label { display: block; margin-bottom: 8px; font-weight: 900; }
+        input[type="text"], input[type="file"], textarea {
+            width: 100%; font: inherit; color: var(--ink); background: transparent; border: 1px solid var(--border); border-radius: 16px;
+        }
+        input[type="text"], input[type="file"] { padding: 12px; }
+        input[type="file"] { margin-bottom: 10px; }
+        textarea { min-height: 220px; padding: 14px; resize: vertical; line-height: 1.6; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+        .alert {
+            margin-top: 14px; padding: 12px 14px; border-radius: 18px; background: rgba(180, 35, 24, 0.10);
+            color: #b42318; border: 1px solid rgba(180, 35, 24, 0.16); font-weight: 800;
+        }
+        .compare-shell { margin-top: 18px; padding: 18px; border-radius: 28px; }
+        .winner-card {
+            display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: center;
+            background: linear-gradient(135deg, var(--panel-strong), rgba(255, 247, 240, 0.96));
+        }
+        body.theme-dark .winner-card { background: linear-gradient(135deg, rgba(18, 32, 54, 0.96), rgba(12, 24, 41, 0.96)); }
+        .winner-score { font-size: 3rem; font-weight: 900; letter-spacing: -0.07em; }
+        .motion-card {
+            opacity: 0;
+            transform: translateY(18px);
+            animation: rise-in 0.72s ease forwards;
+        }
+        .motion-card.delay-1 { animation-delay: 0.08s; }
+        .motion-card.delay-2 { animation-delay: 0.16s; }
+        .motion-card.delay-3 { animation-delay: 0.24s; }
+        @keyframes rise-in {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .resume-grid { margin-top: 16px; }
+        .score-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+        .score-pill {
+            padding: 8px 12px; border-radius: 999px; font-weight: 900; background: var(--teal-soft); color: var(--teal);
+        }
+        .battle-bars {
+            margin-top: 16px;
+            display: grid;
+            gap: 12px;
+        }
+        .battle-row {
+            display: grid;
+            grid-template-columns: 140px 1fr 62px 1fr 140px;
+            gap: 10px;
+            align-items: center;
+        }
+        .battle-label {
+            font-weight: 900;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.8rem;
+        }
+        .battle-track {
+            height: 12px;
+            border-radius: 999px;
+            background: rgba(19, 35, 62, 0.08);
+            overflow: hidden;
+        }
+        .battle-fill {
+            width: 0;
+            height: 100%;
+            border-radius: inherit;
+            transition: width 1s ease;
+        }
+        .battle-fill.left { background: linear-gradient(90deg, var(--accent), #de7d4b); }
+        .battle-fill.right { background: linear-gradient(90deg, var(--teal), #3bb7c8); }
+        .battle-value {
+            text-align: center;
+            font-weight: 900;
+        }
+        .tag.warning { background: var(--warning-soft); color: var(--warning); }
+        .tag.cool { background: var(--teal-soft); color: var(--teal); }
+        ul { margin: 10px 0 0; padding-left: 20px; }
+        li { margin-bottom: 10px; line-height: 1.55; }
+
+        body.theme-dark input[type="text"], body.theme-dark input[type="file"], body.theme-dark textarea,
+        body.theme-dark .mini-card, body.theme-dark .input-card, body.theme-dark .panel, body.theme-dark .winner-card {
+            background: rgba(255,255,255,0.04);
+        }
+
+        @media (max-width: 900px) {
+            .hero, .form-grid, .compare-grid, .resume-grid { grid-template-columns: 1fr; }
+            .battle-row {
+                grid-template-columns: 1fr;
+            }
+            .battle-value {
+                text-align: left;
+            }
+        }
+        @media (max-width: 700px) {
+            .page { width: min(100% - 16px, 1240px); padding: 12px 0 22px; }
+            .topbar, .hero, .form-shell, .compare-shell, .panel, .winner-card, .input-card { border-radius: 20px; }
+            .topbar, .winner-card { align-items: flex-start; grid-template-columns: 1fr; }
+            .topbar, .topbar-actions, .toolbar { width: 100%; flex-direction: column; }
+            .ghost-button, .primary-button { width: 100%; }
+            .mini-grid { display: none; }
+            textarea { min-height: 160px; }
+        }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-mark">RM</div>
+                <div>
+                    <strong>Resume Matcher Pro</strong>
+                    <div class="helper">Resume-vs-resume comparison lab</div>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <a class="ghost-button" href="/">Back To JD Analysis</a>
+                <button class="ghost-button" type="button" id="themeToggle">Dark Mode</button>
+            </div>
+        </header>
+
+        <section class="hero">
+            <div>
+                <div class="eyebrow">Head-To-Head Resume Review</div>
+                <h1>Compare two resumes, score both profiles, and see who leads where.</h1>
+                <p class="muted">This flow reviews each resume independently, then compares strengths, skill depth, impact language, structure, and overall resume quality side by side.</p>
+                <div class="hero-badges">
+                    <span class="hero-badge">Two Resume Scoring</span>
+                    <span class="hero-badge">Unique Suggestions Per Resume</span>
+                    <span class="hero-badge">Head-To-Head Winner</span>
+                    <span class="hero-badge">Comparison Insights</span>
+                </div>
+            </div>
+            <div class="mini-grid">
+                <div class="mini-card">
+                    <strong>Per-resume analysis</strong>
+                    <p>Each resume gets its own score, strengths, improvements, and recommendations.</p>
+                </div>
+                <div class="mini-card">
+                    <strong>Fair comparison</strong>
+                    <p>The engine compares skill breadth, impact language, structure, and profile fit head to head.</p>
+                </div>
+                <div class="mini-card">
+                    <strong>Catch-up advice</strong>
+                    <p>Each person gets targeted tips to improve relative to the other resume.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="form-shell">
+            <div class="section-head">
+                <h2>Compare Two Resumes</h2>
+                <div class="section-kicker">Resume Duel</div>
+            </div>
+            <form method="post" enctype="multipart/form-data">
+                <div class="form-grid">
+                    <div class="input-card">
+                        <label for="label_a">First Resume Name</label>
+                        <input id="label_a" name="label_a" type="text" value="{{ label_a }}" placeholder="Resume A">
+                        <label for="resume_a_text" style="margin-top: 12px;">First Resume</label>
+                        <input id="resume_a_file" name="resume_a_file" type="file" accept=".pdf">
+                        <textarea id="resume_a_text" name="resume_a_text" placeholder="Paste the first resume here..." required>{{ resume_a_text }}</textarea>
+                        <div class="helper">{{ source_label_a }}</div>
+                    </div>
+                    <div class="input-card">
+                        <label for="label_b">Second Resume Name</label>
+                        <input id="label_b" name="label_b" type="text" value="{{ label_b }}" placeholder="Resume B">
+                        <label for="resume_b_text" style="margin-top: 12px;">Second Resume</label>
+                        <input id="resume_b_file" name="resume_b_file" type="file" accept=".pdf">
+                        <textarea id="resume_b_text" name="resume_b_text" placeholder="Paste the second resume here..." required>{{ resume_b_text }}</textarea>
+                        <div class="helper">{{ source_label_b }}</div>
+                    </div>
+                </div>
+                <div class="toolbar">
+                    <button class="primary-button" type="submit">Compare Resumes</button>
+                </div>
+            </form>
+            {% if error_message %}
+            <div class="alert">{{ error_message }}</div>
+            {% endif %}
+        </section>
+
+        {% if comparison %}
+        <section class="compare-shell">
+            <div class="section-head">
+                <h2>Comparison Results</h2>
+                <div class="section-kicker">Live Review</div>
+            </div>
+
+            <div class="winner-card motion-card">
+                <div>
+                    <div class="eyebrow">Overall Winner</div>
+                    <h2 style="margin: 12px 0 8px;">{{ comparison.category_winners.overall }}</h2>
+                    <p class="muted">{{ comparison.comparison_insights[0] if comparison.comparison_insights else "Both resumes are closely matched." }}</p>
+                </div>
+                <div class="winner-score">
+                    <span data-count-to="{{ comparison.resume_a.overall_score }}">{{ comparison.resume_a.overall_score }}%</span>
+                    :
+                    <span data-count-to="{{ comparison.resume_b.overall_score }}">{{ comparison.resume_b.overall_score }}%</span>
+                </div>
+            </div>
+
+            <div class="compare-grid" style="margin-top: 16px;">
+                <div class="panel motion-card delay-1">
+                    <div class="section-kicker">Comparison Insights</div>
+                    <h2>What The Engine Found</h2>
+                    <ul>
+                        {% for item in comparison.comparison_insights %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="panel motion-card delay-2">
+                    <div class="section-kicker">Category Winners</div>
+                    <h2>Head-To-Head Leaders</h2>
+                    <div class="score-row">
+                        <span class="score-pill">Overall: {{ comparison.category_winners.overall }}</span>
+                        <span class="score-pill">Skills: {{ comparison.category_winners.skills }}</span>
+                        <span class="score-pill">Impact: {{ comparison.category_winners.impact }}</span>
+                        <span class="score-pill">Structure: {{ comparison.category_winners.structure }}</span>
+                    </div>
+                    <div class="battle-bars">
+                        <div class="battle-row">
+                            <div class="battle-label">Overall</div>
+                            <div class="battle-track"><div class="battle-fill left" data-width="{{ comparison.resume_a.overall_score }}"></div></div>
+                            <div class="battle-value">{{ comparison.resume_a.overall_score }}%</div>
+                            <div class="battle-track"><div class="battle-fill right" data-width="{{ comparison.resume_b.overall_score }}"></div></div>
+                            <div class="battle-value">{{ comparison.resume_b.overall_score }}%</div>
+                        </div>
+                        <div class="battle-row">
+                            <div class="battle-label">Skills</div>
+                            <div class="battle-track"><div class="battle-fill left" data-width="{{ comparison.resume_a.skill_score }}"></div></div>
+                            <div class="battle-value">{{ comparison.resume_a.skill_score }}%</div>
+                            <div class="battle-track"><div class="battle-fill right" data-width="{{ comparison.resume_b.skill_score }}"></div></div>
+                            <div class="battle-value">{{ comparison.resume_b.skill_score }}%</div>
+                        </div>
+                        <div class="battle-row">
+                            <div class="battle-label">Impact</div>
+                            <div class="battle-track"><div class="battle-fill left" data-width="{{ comparison.resume_a.impact_score }}"></div></div>
+                            <div class="battle-value">{{ comparison.resume_a.impact_score }}%</div>
+                            <div class="battle-track"><div class="battle-fill right" data-width="{{ comparison.resume_b.impact_score }}"></div></div>
+                            <div class="battle-value">{{ comparison.resume_b.impact_score }}%</div>
+                        </div>
+                        <div class="battle-row">
+                            <div class="battle-label">Structure</div>
+                            <div class="battle-track"><div class="battle-fill left" data-width="{{ comparison.resume_a.structure_score }}"></div></div>
+                            <div class="battle-value">{{ comparison.resume_a.structure_score }}%</div>
+                            <div class="battle-track"><div class="battle-fill right" data-width="{{ comparison.resume_b.structure_score }}"></div></div>
+                            <div class="battle-value">{{ comparison.resume_b.structure_score }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="resume-grid">
+                <div class="panel motion-card delay-2">
+                    <div class="section-kicker">{{ comparison.resume_a.label }}</div>
+                    <h2>{{ comparison.resume_a.inferred_role.title() }}</h2>
+                    <div class="score-row">
+                        <span class="score-pill">Overall {{ comparison.resume_a.overall_score }}%</span>
+                        <span class="score-pill">Skills {{ comparison.resume_a.skill_score }}%</span>
+                        <span class="score-pill">Impact {{ comparison.resume_a.impact_score }}%</span>
+                        <span class="score-pill">Structure {{ comparison.resume_a.structure_score }}%</span>
+                    </div>
+
+                    <h3 style="margin-top: 16px;">Detected Skills</h3>
+                    <div class="tag-list">
+                        {% for skill in comparison.resume_a.resume_skills %}
+                        <span class="tag">{{ skill }}</span>
+                        {% else %}
+                        <span class="empty">No strong technical signals detected yet.</span>
+                        {% endfor %}
+                    </div>
+
+                    <h3 style="margin-top: 16px;">Strengths</h3>
+                    <ul>
+                        {% for item in comparison.resume_a.strengths %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    <h3 style="margin-top: 16px;">Improvements</h3>
+                    <ul>
+                        {% for item in comparison.resume_a.improvements %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    <h3 style="margin-top: 16px;">How To Catch Up</h3>
+                    <ul>
+                        {% for item in comparison.head_to_head_tips[comparison.resume_a.label] %}
+                        <li>{{ item }}</li>
+                        {% else %}
+                        <li>This resume is already leading or closely matched in most areas.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="panel motion-card delay-3">
+                    <div class="section-kicker">{{ comparison.resume_b.label }}</div>
+                    <h2>{{ comparison.resume_b.inferred_role.title() }}</h2>
+                    <div class="score-row">
+                        <span class="score-pill">Overall {{ comparison.resume_b.overall_score }}%</span>
+                        <span class="score-pill">Skills {{ comparison.resume_b.skill_score }}%</span>
+                        <span class="score-pill">Impact {{ comparison.resume_b.impact_score }}%</span>
+                        <span class="score-pill">Structure {{ comparison.resume_b.structure_score }}%</span>
+                    </div>
+
+                    <h3 style="margin-top: 16px;">Detected Skills</h3>
+                    <div class="tag-list">
+                        {% for skill in comparison.resume_b.resume_skills %}
+                        <span class="tag">{{ skill }}</span>
+                        {% else %}
+                        <span class="empty">No strong technical signals detected yet.</span>
+                        {% endfor %}
+                    </div>
+
+                    <h3 style="margin-top: 16px;">Strengths</h3>
+                    <ul>
+                        {% for item in comparison.resume_b.strengths %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    <h3 style="margin-top: 16px;">Improvements</h3>
+                    <ul>
+                        {% for item in comparison.resume_b.improvements %}
+                        <li>{{ item }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    <h3 style="margin-top: 16px;">How To Catch Up</h3>
+                    <ul>
+                        {% for item in comparison.head_to_head_tips[comparison.resume_b.label] %}
+                        <li>{{ item }}</li>
+                        {% else %}
+                        <li>This resume is already leading or closely matched in most areas.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="compare-grid" style="margin-top: 16px;">
+                <div class="panel motion-card delay-2">
+                    <div class="section-kicker">Shared Skills</div>
+                    <h2>Common Ground</h2>
+                    <div class="tag-list">
+                        {% for skill in comparison.shared_skills %}
+                        <span class="tag cool">{{ skill }}</span>
+                        {% else %}
+                        <span class="empty">Very little overlap detected between the two resumes.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="panel motion-card delay-3">
+                    <div class="section-kicker">Differentiators</div>
+                    <h2>Unique Skills</h2>
+                    <div class="tag-list" style="margin-bottom: 12px;">
+                        {% for skill in comparison.unique_a %}
+                        <span class="tag">{{ comparison.resume_a.label }}: {{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="tag-list">
+                        {% for skill in comparison.unique_b %}
+                        <span class="tag warning">{{ comparison.resume_b.label }}: {{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+    </main>
+
+    <script>
+        const storedTheme = localStorage.getItem("resume-matcher-theme");
+        const body = document.body;
+        const themeToggle = document.getElementById("themeToggle");
+
+        if (storedTheme === "dark") {
+            body.classList.add("theme-dark");
+            themeToggle.textContent = "Light Mode";
+        }
+
+        themeToggle.addEventListener("click", () => {
+            body.classList.toggle("theme-dark");
+            const isDark = body.classList.contains("theme-dark");
+            localStorage.setItem("resume-matcher-theme", isDark ? "dark" : "light");
+            themeToggle.textContent = isDark ? "Light Mode" : "Dark Mode";
+        });
+
+        const animateCount = (element) => {
+            const target = Number(element.dataset.countTo || 0);
+            const duration = 900;
+            const start = performance.now();
+            const hasDecimal = String(target).includes(".");
+
+            const step = (now) => {
+                const progress = Math.min((now - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const value = target * eased;
+                element.textContent = `${hasDecimal ? value.toFixed(1) : Math.round(value)}%`;
+                if (progress < 1) requestAnimationFrame(step);
+            };
+
+            requestAnimationFrame(step);
+        };
+
+        document.querySelectorAll(".battle-fill").forEach((bar, index) => {
+            const width = Number(bar.dataset.width || 0);
+            setTimeout(() => {
+                bar.style.width = `${width}%`;
+            }, 180 + index * 80);
+        });
+
+        document.querySelectorAll("[data-count-to]").forEach((element) => animateCount(element));
+    </script>
+</body>
+</html>

@@ -649,6 +649,154 @@ def role_recommendations(role_name, resume_skills, job_skills):
     }
 
 
+def infer_resume_role(resume_skills):
+    if not resume_skills:
+        return "generalist candidate"
+
+    role_scores = {}
+    skill_set = set(resume_skills)
+    for role_name, profile in ROLE_PROFILES.items():
+        role_scores[role_name] = len(skill_set & set(profile))
+
+    best_role = max(role_scores, key=role_scores.get)
+    if role_scores[best_role] == 0:
+        return "generalist candidate"
+    return best_role
+
+
+def section_presence_score(resume_text):
+    normalized = normalize_text(resume_text)
+    score = 0
+    for pattern in (
+        r"\bskills?\b",
+        r"\bprojects?\b",
+        r"\beducation\b",
+        r"\bexperience\b",
+        r"\bcertifications?\b",
+    ):
+        if re.search(pattern, normalized):
+            score += 18
+    return float(min(score, 100))
+
+
+def skill_depth_score(resume_skills):
+    if not resume_skills:
+        return 0.0
+    important_overlap = len(set(resume_skills) & IMPORTANT_SKILLS)
+    base = min(len(resume_skills) * 6, 70)
+    boost = min(important_overlap * 6, 30)
+    return float(min(base + boost, 100))
+
+
+def analyze_resume_profile(resume_text, label="Resume"):
+    resume_skills = extract_resume_skills(resume_text)
+    impact_score = evidence_score(resume_text)
+    structure_score = section_presence_score(resume_text)
+    skill_score = skill_depth_score(resume_skills)
+    overall_score = round(skill_score * 0.45 + impact_score * 0.35 + structure_score * 0.20)
+    inferred_role = infer_resume_role(resume_skills)
+
+    strengths = []
+    if resume_skills:
+        strengths.append(f"Shows {len(resume_skills)} detected technical skills.")
+    if any(skill in IMPORTANT_SKILLS for skill in resume_skills):
+        strengths.append("Covers important industry-relevant tools and technical signals.")
+    if impact_score >= 55:
+        strengths.append("Uses action-oriented language and measurable evidence well.")
+    if structure_score >= 54:
+        strengths.append("Includes clear resume sections that improve readability and ATS scanning.")
+
+    improvements = []
+    if skill_score < 45:
+        improvements.append("Add a clearer technical skills section with role-relevant tools and frameworks.")
+    if impact_score < 45:
+        improvements.append("Strengthen project bullets with measurable outcomes, ownership, and delivery impact.")
+    if structure_score < 45:
+        improvements.append("Use clearer sections such as Skills, Projects, Experience, and Certifications.")
+    if len(resume_skills) <= 4:
+        improvements.append("Expand the resume with stronger project tooling, libraries, and platform keywords.")
+
+    role_tips = role_recommendations(inferred_role, resume_skills, ROLE_PROFILES.get(inferred_role, []))
+
+    return {
+        "label": label,
+        "resume_skills": resume_skills,
+        "overall_score": overall_score,
+        "skill_score": round(skill_score, 1),
+        "impact_score": round(impact_score, 1),
+        "structure_score": round(structure_score, 1),
+        "inferred_role": inferred_role,
+        "strengths": strengths or ["Has a usable starting foundation but needs stronger positioning."],
+        "improvements": improvements or ["Keep refining project depth and role-specific phrasing for stronger competitiveness."],
+        "recommendations": role_tips["recommendations"],
+    }
+
+
+def winner_label(score_a, score_b, label_a, label_b):
+    if score_a > score_b:
+        return label_a
+    if score_b > score_a:
+        return label_b
+    return "Tie"
+
+
+def compare_resumes(resume_a_text, resume_b_text, label_a="Resume A", label_b="Resume B"):
+    profile_a = analyze_resume_profile(resume_a_text, label=label_a)
+    profile_b = analyze_resume_profile(resume_b_text, label=label_b)
+
+    skills_a = set(profile_a["resume_skills"])
+    skills_b = set(profile_b["resume_skills"])
+    shared_skills = sorted(skills_a & skills_b)
+    only_a = sorted(skills_a - skills_b)
+    only_b = sorted(skills_b - skills_a)
+
+    category_winners = {
+        "overall": winner_label(profile_a["overall_score"], profile_b["overall_score"], label_a, label_b),
+        "skills": winner_label(profile_a["skill_score"], profile_b["skill_score"], label_a, label_b),
+        "impact": winner_label(profile_a["impact_score"], profile_b["impact_score"], label_a, label_b),
+        "structure": winner_label(profile_a["structure_score"], profile_b["structure_score"], label_a, label_b),
+    }
+
+    comparison_insights = []
+    if only_a:
+        comparison_insights.append(f"{label_a} stands out with: {', '.join(only_a[:5])}.")
+    if only_b:
+        comparison_insights.append(f"{label_b} stands out with: {', '.join(only_b[:5])}.")
+    if shared_skills:
+        comparison_insights.append(f"Both resumes overlap on: {', '.join(shared_skills[:6])}.")
+    if category_winners["overall"] != "Tie":
+        comparison_insights.append(f"{category_winners['overall']} currently has the stronger overall resume profile.")
+
+    head_to_head_tips = {
+        label_a: [],
+        label_b: [],
+    }
+    if only_b:
+        head_to_head_tips[label_a].append(f"To catch up, consider adding evidence around: {', '.join(only_b[:4])}.")
+    if profile_a["impact_score"] < profile_b["impact_score"]:
+        head_to_head_tips[label_a].append("Use more measurable outcomes and stronger action verbs in project bullets.")
+    if profile_a["structure_score"] < profile_b["structure_score"]:
+        head_to_head_tips[label_a].append("Make section headings and resume organization clearer for faster scanning.")
+
+    if only_a:
+        head_to_head_tips[label_b].append(f"To catch up, consider adding evidence around: {', '.join(only_a[:4])}.")
+    if profile_b["impact_score"] < profile_a["impact_score"]:
+        head_to_head_tips[label_b].append("Add stronger quantified outcomes and ownership language to key projects.")
+    if profile_b["structure_score"] < profile_a["structure_score"]:
+        head_to_head_tips[label_b].append("Tighten section structure so recruiters can scan technical depth faster.")
+
+    return {
+        "resume_a": profile_a,
+        "resume_b": profile_b,
+        "shared_skills": shared_skills,
+        "unique_a": only_a,
+        "unique_b": only_b,
+        "category_winners": category_winners,
+        "comparison_insights": comparison_insights or ["Both resumes are closely matched and need more differentiating evidence."],
+        "head_to_head_tips": head_to_head_tips,
+    }
+
+
 def build_report(result):
     lines = [
         "RESUME MATCH REPORT",

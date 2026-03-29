@@ -2,7 +2,7 @@ from pathlib import Path
 
 from flask import Flask, redirect, render_template, request, send_file, url_for
 
-from matcher import analyze_match
+from matcher import analyze_match, compare_resumes
 from parser import extract_pdf_text
 from pdf_report import build_pdf_report
 
@@ -47,6 +47,29 @@ def build_result_context(page_name):
     return result, submission
 
 
+def extract_resume_input(text_key, file_key, label_key, default_label):
+    resume_text = request.form.get(text_key, "").strip()
+    source_label = request.form.get(label_key, default_label).strip() or default_label
+    error_message = None
+
+    resume_file = request.files.get(file_key)
+    if resume_file and resume_file.filename:
+        if resume_file.filename.lower().endswith(".pdf"):
+            try:
+                resume_text = extract_pdf_text(resume_file)
+                source_label = f"Extracted from PDF: {resume_file.filename}"
+            except Exception:
+                error_message = "Could not read one of the PDF resumes. Try a text-based PDF or paste the resume manually."
+        else:
+            error_message = "Please upload PDF resumes or paste the resume text manually."
+
+    return {
+        "resume_text": resume_text,
+        "source_label": source_label,
+        "error_message": error_message,
+    }
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     resume_text = ""
@@ -79,6 +102,45 @@ def index():
         resume_text=resume_text,
         job_description=job_description,
         source_label=source_label,
+    )
+
+
+@app.route("/compare", methods=["GET", "POST"])
+def compare():
+    resume_a_text = ""
+    resume_b_text = ""
+    source_label_a = "Pasted resume text"
+    source_label_b = "Pasted resume text"
+    label_a = "Resume A"
+    label_b = "Resume B"
+    error_message = None
+    comparison = None
+
+    if request.method == "POST":
+        label_a = request.form.get("label_a", "Resume A").strip() or "Resume A"
+        label_b = request.form.get("label_b", "Resume B").strip() or "Resume B"
+        submission_a = extract_resume_input("resume_a_text", "resume_a_file", "source_label_a", "Pasted resume text")
+        submission_b = extract_resume_input("resume_b_text", "resume_b_file", "source_label_b", "Pasted resume text")
+
+        resume_a_text = submission_a["resume_text"]
+        resume_b_text = submission_b["resume_text"]
+        source_label_a = submission_a["source_label"]
+        source_label_b = submission_b["source_label"]
+        error_message = submission_a["error_message"] or submission_b["error_message"]
+
+        if resume_a_text and resume_b_text and not error_message:
+            comparison = compare_resumes(resume_a_text, resume_b_text, label_a=label_a, label_b=label_b)
+
+    return render_template(
+        "compare.html",
+        comparison=comparison,
+        error_message=error_message,
+        resume_a_text=resume_a_text,
+        resume_b_text=resume_b_text,
+        source_label_a=source_label_a,
+        source_label_b=source_label_b,
+        label_a=label_a,
+        label_b=label_b,
     )
 
 

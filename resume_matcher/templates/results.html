@@ -225,6 +225,7 @@
             place-items: center;
             position: relative;
             background: conic-gradient(var(--ring-color) calc(var(--value) * 1%), var(--ring-track) 0);
+            transition: background 1.1s ease;
         }
 
         .progress-ring::before {
@@ -251,6 +252,23 @@
             font-size: 4rem;
             letter-spacing: -0.08em;
             margin: 0 0 8px;
+        }
+
+        .motion-card {
+            opacity: 0;
+            transform: translateY(18px);
+            animation: rise-in 0.7s ease forwards;
+        }
+
+        .motion-card.delay-1 { animation-delay: 0.08s; }
+        .motion-card.delay-2 { animation-delay: 0.16s; }
+        .motion-card.delay-3 { animation-delay: 0.24s; }
+
+        @keyframes rise-in {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .band {
@@ -504,16 +522,16 @@
         </header>
 
         <section class="summary-hero">
-            <div class="summary-card">
+            <div class="summary-card motion-card">
                 <div class="eyebrow">Summary</div>
                 <h1 class="summary-title">{{ result.role_summary.role_name.title() }}</h1>
                 <div class="score-row">
-                    <div class="progress-ring" style="--value: {{ result.overall_score }}; --ring-color: var(--accent);">
-                        <span>{{ result.overall_score }}%</span>
+                    <div class="progress-ring" data-value="{{ result.overall_score }}" style="--value: 0; --ring-color: var(--accent);">
+                        <span data-count-to="{{ result.overall_score }}">{{ result.overall_score }}%</span>
                     </div>
                     <div>
                         <div class="muted">Overall Match</div>
-                        <div class="big-score">{{ result.overall_score }}%</div>
+                        <div class="big-score" data-count-to="{{ result.overall_score }}">{{ result.overall_score }}%</div>
                         <div class="band">{{ result.readiness_band }}</div>
                         <p class="helper">A combined view of skill overlap, semantic alignment, and resume evidence.</p>
                     </div>
@@ -521,9 +539,9 @@
             </div>
 
             <div class="meta-grid">
-                <div class="metric-card">
-                    <div class="progress-ring" style="--value: {{ result.skill_score }}; --ring-color: var(--teal);">
-                        <span>{{ result.skill_score }}%</span>
+                <div class="metric-card motion-card delay-1">
+                    <div class="progress-ring" data-value="{{ result.skill_score }}" style="--value: 0; --ring-color: var(--teal);">
+                        <span data-count-to="{{ result.skill_score }}">{{ result.skill_score }}%</span>
                     </div>
                     <div class="metric-copy">
                         <h3>Weighted Skill Match</h3>
@@ -531,9 +549,9 @@
                     </div>
                 </div>
 
-                <div class="metric-card">
-                    <div class="progress-ring" style="--value: {{ result.semantic_score }}; --ring-color: var(--gold);">
-                        <span>{{ result.semantic_score }}%</span>
+                <div class="metric-card motion-card delay-2">
+                    <div class="progress-ring" data-value="{{ result.semantic_score }}" style="--value: 0; --ring-color: var(--gold);">
+                        <span data-count-to="{{ result.semantic_score }}">{{ result.semantic_score }}%</span>
                     </div>
                     <div class="metric-copy">
                         <h3>Semantic Alignment</h3>
@@ -541,9 +559,9 @@
                     </div>
                 </div>
 
-                <div class="metric-card">
-                    <div class="progress-ring" style="--value: {{ result.impact_score }}; --ring-color: var(--success);">
-                        <span>{{ result.impact_score }}%</span>
+                <div class="metric-card motion-card delay-3">
+                    <div class="progress-ring" data-value="{{ result.impact_score }}" style="--value: 0; --ring-color: var(--success);">
+                        <span data-count-to="{{ result.impact_score }}">{{ result.impact_score }}%</span>
                     </div>
                     <div class="metric-copy">
                         <h3>Resume Evidence</h3>
@@ -733,6 +751,35 @@
             localStorage.setItem("resume-matcher-theme", isDark ? "dark" : "light");
             themeToggle.textContent = isDark ? "Light Mode" : "Dark Mode";
         });
+
+        const animateCount = (element) => {
+            const target = Number(element.dataset.countTo || 0);
+            const hasDecimal = String(target).includes(".");
+            const suffix = "%";
+            const duration = 900;
+            const start = performance.now();
+
+            const step = (now) => {
+                const progress = Math.min((now - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const value = target * eased;
+                element.textContent = `${hasDecimal ? value.toFixed(1) : Math.round(value)}${suffix}`;
+                if (progress < 1) requestAnimationFrame(step);
+            };
+
+            requestAnimationFrame(step);
+        };
+
+        document.querySelectorAll(".progress-ring").forEach((ring, index) => {
+            const value = Number(ring.dataset.value || 0);
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    ring.style.setProperty("--value", value);
+                }, 120 + index * 90);
+            });
+        });
+
+        document.querySelectorAll("[data-count-to]").forEach((element) => animateCount(element));
     </script>
 </body>
 </html>
